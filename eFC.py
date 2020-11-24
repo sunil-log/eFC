@@ -44,10 +44,12 @@ class eFC:
 		self.fn_eigen_val = Path(  str(self.fn_pure ) + "_eigh_val.npy"  )
 		
 		self.fn_tsne = Path(  str(self.fn_pure ) + "_tsne.png"  )
-		self.fn_gij = Path(  str(self.fn_pure ) + "_gij.cvs"  )
+		self.fn_gij = Path(  str(self.fn_pure ) + "_gij.csv"  )
 		
 		self.fn_pic_fig = Path(  str(self.fn_pure ) + "_pic.png"  )
 		self.fn_pic_table = Path(  str(self.fn_pure ) + "_pic.csv"  )
+		
+		self.fn_sij_fig = Path(  str(self.fn_pure ) + "_sij.png"  )
 		
 		
 		
@@ -111,10 +113,11 @@ class eFC:
 
 			
 			# plot figure
+			plt.close()
 			fig, ax = plt.subplots(figsize=(12, 12))
 			ax.imshow(eFC, interpolation='nearest', aspect='auto', cmap=plt.cm.get_cmap('seismic'))
 			plt.savefig(self.fn_eFC_fig)
-			plt.close()
+			
 
 				
 	
@@ -421,16 +424,63 @@ class eFC:
 		df_res = df[['nr', 'entropy']]
 		# df_res['nr'] = df_res['nr'].astype('int')
 		
-		
-		print(df_res)	
+		return df_res
 		
 		
 	# =====================================
 	# Constructor (parameters)
 	# =====================================		
-	def normalized_entropy(self):
+	def gen_sij(self):
 	
+		# ERROR, if there is no g_ij matrix
+		if not( self.fn_gij.exists() ):	
+			print('> ERROR: No Eigenvector matrix found')
+			exit()			
 		
+				
+		# load g_ij matrix
+		df = pd.read_csv(self.fn_gij)
+		
+		
+		# make the table in a matrix form 
+		gij = df.pivot(index='i', columns='j', values='g').fillna(1e4).values
+		#   -> shape=(200x200)
+		#   -> g_{ii}=1e4  # a ridiculous value
+		
+		
+		# avoiding 1/0
+		#    group index 'c (or k)' can have 0 
+		#    (NOTE: it is not region index)
+		gij = gij+1  
+		
+		
+		# calculating (i,j) - similarlity		
+		x_iju = np.einsum('iu,ju->iju', gij, 1/gij)
+		x_iju[x_iju>1+1e-10]=0
+		x_iju[x_iju<1-1e-10]=0
+		x_iju = x_iju.astype('int')
+		
+		
+		# ------------------------------------
+		# 'iu,ju->iju' 와 같이 나누면 (i,j,u) 가 결정되었을 때,
+		# x_{iu}==x_{ju} 라면 1; 그 외에는 1 이외의 값이 나온다.
+		# 따라서 u 방향으로 1 이 아닌것을 0 처리하면 \delta() 랑 같은 계산이 된다.
+		# ------------------------------------
+		
+		
+		# sum over u; where shape=(i,j,u)
+		sij = x_iju.sum(axis=2) / (x_iju.shape[0] - 2)
+			
+		
+		# plot figure for sij
+		plt.close()
+		fig, ax = plt.subplots(figsize=(12, 12))
+		ax.imshow(sij, interpolation='nearest', aspect='auto', cmap=plt.cm.get_cmap('bwr'))
+		plt.savefig(self.fn_sij_fig)	
+
+
+		
+	
 	
 		
 		

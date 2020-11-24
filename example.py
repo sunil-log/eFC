@@ -42,6 +42,7 @@ def main():
 	region_name = np.array(cat_label.T[0].tolist()).flatten()  # -> shepe = (regions ~ 10)
 	
 	
+	
 	# declare eFC instance
 	eFC_rest1 = eFC.eFC(fn_str, bold_sig, node_region, region_name)
 	
@@ -67,7 +68,14 @@ def main():
 	
 	
 	# calculate normalized entropy from p_{ic}
-	eFC_rest1.normalized_entropy()
+	df_ent = eFC_rest1.normalized_entropy()
+	# print(df_ent)
+	
+	
+	# calculate s_{ij}
+	eFC_rest1.gen_sij()
+	
+	
 	
 	
 	
