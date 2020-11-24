@@ -66,6 +66,11 @@ def main():
 	eFC_rest1.gen_pic()
 	
 	
+	# calculate normalized entropy from p_{ic}
+	eFC_rest1.normalized_entropy()
+	
+	
+	
 	
 
 # ==================================

@@ -47,6 +47,7 @@ class eFC:
 		self.fn_gij = Path(  str(self.fn_pure ) + "_gij.cvs"  )
 		
 		self.fn_pic_fig = Path(  str(self.fn_pure ) + "_pic.png"  )
+		self.fn_pic_table = Path(  str(self.fn_pure ) + "_pic.csv"  )
 		
 		
 		
@@ -325,8 +326,9 @@ class eFC:
 		
 		
 		
-		# sort colume by the Euclidean distance 
-		#     col 이름을 0 으로부터 col 까지 Euclidean distance 로 한 뒤, 
+		# Euclidean similarlity between clusters
+		#     sort colume by the Euclidean distance 
+		#     col (cluster) 이름을 0 으로부터 col 까지 Euclidean distance 로 한 뒤, 
 		#     col 이름으로 sort 한다
 		empty_vec = np.zeros(len(dfx))
 		f = lambda x: int(np.linalg.norm(empty_vec - x)*1000)
@@ -338,6 +340,8 @@ class eFC:
 		# sort row by node categoroes (self.node_region)	
 		cat = pd.Series(self.node_region, index=dfx.index, name='nr')		
 		dfx2 = pd.concat([dfx, cat], axis=1, sort=False)
+		dfx2.to_csv(self.fn_pic_table, index=False)
+		
 		
 		
 		# --------------------------
@@ -383,8 +387,51 @@ class eFC:
 		print("> Saving p_ic figure")
 		plt.savefig(self.fn_pic_fig)
 		
+
+
+	# =====================================
+	# Constructor (parameters)
+	# =====================================		
+	def normalized_entropy(self):
+	
+		# ERROR, if there is no p_ic matrix
+		if not( self.fn_pic_table.exists() ):	
+			print('> ERROR: No Eigenvector matrix found')
+			exit()		
+		
+		# load p_ic matrix
+		#     +1e-10 to prevent log(0) error
+		df = pd.read_csv(self.fn_pic_table) + 1e-10  
+		
+
+		# remove nr (node region code)
+		new_col = df.columns.to_list()
+		new_col.remove('nr')
+		df_new = df[new_col]
 		
 		
+		# log pic
+		df_log = np.log2(df_new)
+		
+		
+		# entropy	
+		n_k = df_new.shape[1]
+		df['entropy'] = -(df * df_log).sum(axis=1)
+		df['entropy'] = df['entropy'] / np.log2(n_k)  # normalize
+		df_res = df[['nr', 'entropy']]
+		# df_res['nr'] = df_res['nr'].astype('int')
+		
+		
+		print(df_res)	
+		
+		
+	# =====================================
+	# Constructor (parameters)
+	# =====================================		
+	def normalized_entropy(self):
+	
+		
+	
 		
 		
 	# ==================================
