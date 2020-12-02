@@ -39,6 +39,8 @@ class eFC:
 		
 		self.fn_eFC = Path(  str(self.fn_pure ) + "_eFC.npy"  )
 		self.fn_eFC_fig = Path(  str(self.fn_pure ) + "_eFC_fig.png"  )
+		self.fn_bold_fig = Path(  str(self.fn_pure ) + "_bold_fig.png"  )
+		self.plot_bold()
 		
 		self.fn_eigen_vec = Path(  str(self.fn_pure ) + "_eigh_vec.npy"  ) 
 		self.fn_eigen_val = Path(  str(self.fn_pure ) + "_eigh_val.npy"  )
@@ -51,6 +53,18 @@ class eFC:
 		
 		self.fn_sij_fig = Path(  str(self.fn_pure ) + "_sij.png"  )
 		
+
+	# =====================================
+	# Constructor (parameters)
+	# =====================================	
+	def plot_bold(self):
+	
+		# plot figure
+		z = stats.zscore(self.bold_sig)
+		plt.close()
+		fig, ax = plt.subplots(figsize=(15, 6))
+		ax.imshow(z.T, interpolation='nearest', aspect='auto', cmap=plt.cm.get_cmap('seismic'))
+		plt.savefig(self.fn_bold_fig)
 		
 		
 		
